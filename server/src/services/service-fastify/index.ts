@@ -1,8 +1,29 @@
 
-import { registerRoute, registerRouter, start, init } from './fastify.lib';
+import type { FastifySchema } from 'fastify';
+
 import type { HookContext } from '@/types';
 
-const SERVICE_NAME = 'fastify';
+import { registerRoute, registerRouter, start, init } from './fastify.lib';
+import type { FastifyLibContext } from './types';
+
+const SERVICE_NAME: string = 'fastify';
+
+const hooks: Record<string, string> = {
+    INIT_FASTIFY: 'INIT_FASTIFY',
+};
+
+const healthSchema: FastifySchema = {
+    tags: ['health'],
+    description: 'Health check endpoint',
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                message: { type: 'string' }
+            }
+        }
+    }
+};
 
 export default ({
     registerAction,
@@ -12,48 +33,37 @@ export default ({
     createHook,
     setContext,
 }: HookContext) => {
-    registerHook({
-        INIT_FASTIFY: 'INIT_FASTIFY',
-    });
+    registerHook(hooks);
 
     registerAction({
         name: SERVICE_NAME,
         trace: __dirname,
         hook: '$INIT_SERVICE',
         handler: async () => {
-            init(getConfig('service-fastify'));
+            await init(getConfig('service-fastify'));
 
-            registerRoute.get('', (req, res) => {
-                res.send('API is running');
-            })
-
-            await createHook.sync(knownHooks.INIT_FASTIFY, {
-                registerRoute,
-                registerRouter,
-            });
-
-            setContext('fastify', {
-                registerRoute,
-                registerRouter,
-            })
+            await createHook.sync(knownHooks.INIT_FASTIFY, { registerRoute, registerRouter });
+            setContext('fastify', { registerRoute, registerRouter });
         }
     });
 
     registerAction({
         name: SERVICE_NAME,
         trace: __dirname,
-        hook: '$START_SERVICE',
-        handler: start,
-    });
+        hook: '$INIT_FASTIFY',
+        handler: ({ registerRoute }: FastifyLibContext) => {
+            registerRoute.get({
+                url: '/health',
+                schema: healthSchema,
+                handler: async () => ({ message: 'ok' })
+            });
+        }
+    })
 
-    // registerAction({
-    //     name: SERVICE_NAME,
-    //     trace: __dirname,
-    //     hook: '$INIT_FASTIFY',
-    //     handler: async ({ registerRoute }: InitFastifyContext) => {
-    //         registerRoute.get('/test', (request, reply) => {
-    //             return reply.send('Hello World');
-    //         });
-    //     }
-    // });
+    registerAction({
+        name: SERVICE_NAME,
+        trace: __dirname,
+        hook: '$START_SERVICE',
+        handler: start
+    });
 };

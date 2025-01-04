@@ -1,18 +1,17 @@
 import Fastify, { FastifyInstance } from 'fastify';
-import { InitFastifyConfig } from './types';
+import { InitConfig, RouteConfig } from './types';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
-let config: InitFastifyConfig = null;
+let config: InitConfig = null;
 let client: FastifyInstance = null;
 
-// List of all routes
-export const routePaths: string[] = [];
-
-export const init = (_config: InitFastifyConfig) => {
+export const init = async (_config: InitConfig) => {
     config = _config;
-
-    client = Fastify({
-        logger: config.logger,
-    });
+    client = Fastify({ logger: config.logger });
+    
+    await client.register(swagger, config.swagger);
+    await client.register(swaggerUi, config.swaggerUi);
 };
 
 export const start = async () => {
@@ -20,39 +19,12 @@ export const start = async () => {
     console.log(`API is running on http://localhost:${config.port}${config.basePath}`);
 };
 
-// Get all routes
-export const getRoutesPaths = () => routePaths;
-
-// Register a router
-export const registerRouter = (file: any, prefix: string) => {
-    routePaths.push(`${config.basePath}${prefix}`);
-    client.register(file, { prefix: `${config.basePath}${prefix}` });
+export const registerRoute = {
+    get: (routeConfig: RouteConfig) => client.get(`${config.basePath}${routeConfig.url}`, routeConfig),
+    post: (routeConfig: RouteConfig) => client.post(`${config.basePath}${routeConfig.url}`, routeConfig),
+    put: (routeConfig: RouteConfig) => client.put(`${config.basePath}${routeConfig.url}`, routeConfig),
+    delete: (routeConfig: RouteConfig) => client.delete(`${config.basePath}${routeConfig.url}`, routeConfig),
 };
 
-// Register a route
-export const registerRoute = (method: string, url: string, handler: Function, schema: object = {}) => {
-    routePaths.push(`${config.basePath}${url}`);
-
-    client.route({
-        method,
-        url: `${config.basePath}${url}`,
-        handler: (request, reply) => handler(request, reply),
-        schema,
-    });
-};
-
-registerRoute.get = (url: string, handler: Function, schema: object = {}) => {
-    registerRoute('GET', url, handler, schema);
-};
-
-registerRoute.post = (url: string, handler: Function, schema: object = {}) => {
-    registerRoute('POST', url, handler, schema);
-};
-
-registerRoute.put = (url: string, handler: Function, schema: object = {}) => {
-    registerRoute('PUT', url, handler, schema);
-};
-
-registerRoute.delete = (url: string, handler: Function, schema: object = {}) => {
-    registerRoute('DELETE', url, handler, schema);
-};
+export const registerRouter = (plugin: any, prefix: string) => 
+    client.register(plugin, { prefix: `${config.basePath}${prefix}` });
