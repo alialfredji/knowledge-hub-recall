@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { HookContext } from '../../types';
+import type { HookContext } from '@/types';
 import { InitSupabaseConfig } from './types';
 
 const SERVICE_NAME = 'supabase';

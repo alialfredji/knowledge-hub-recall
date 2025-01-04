@@ -1,6 +1,6 @@
 
 import { registerRoute, registerRouter, start, init } from './fastify.lib';
-import type { HookContext } from '../../types';
+import type { HookContext } from '@/types';
 
 const SERVICE_NAME = 'fastify';
 

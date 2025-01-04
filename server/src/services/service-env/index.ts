@@ -11,7 +11,7 @@
 import path from 'path'
 import fs from 'fs'
 import nodeEnvFile from 'node-env-file'
-import type { HookContext } from '../../types'
+import type { HookContext } from '@/types'
 
 const SERVICE_NAME = 'env'
 

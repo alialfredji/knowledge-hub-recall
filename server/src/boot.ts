@@ -1,8 +1,8 @@
 import hookApp from '@alialfredji/hook-app';
-import type { HookContext } from './types';
+import type { HookContext } from '@/types';
 
 hookApp.run({
-    trace: true,
+    trace: process.env.NODE_ENV === 'development',
     features: [],
     services: [
         require('./services/service-env'),
@@ -13,7 +13,7 @@ hookApp.run({
         setConfig('service-fastify', {
             port: getEnv('PORT', '8080'),
             basePath: getEnv('BASE_PATH', '/api'),
-            logger: getEnv('LOGGER', false),
+            logger: getEnv('LOGGER', 'false') === 'true',
         });
 
         setConfig('service-supabase', {
@@ -22,18 +22,3 @@ hookApp.run({
         });
     },
 });
-
-/*
-Result in console
----------------------
-
-testHook payload: Hello World!
-
-=================
-Boot Trace:
-=================
-
-▶ feature1 ◇ init::feature
-  ▶ feature1 » testHook
-♦ app/trace ◇ finish
-*/

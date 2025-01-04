@@ -5,7 +5,13 @@
     "target": "es6",
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "build"
+    "outDir": "build",
+    "baseUrl": ".",
+    "paths": {
+      "@types": ["src/types"],
+      "@/*": ["src/*"]
+    }
   },
-  "lib": ["es2015"]
+  "lib": ["es2015"],
+  "include": ["src/**/*"]
 }
