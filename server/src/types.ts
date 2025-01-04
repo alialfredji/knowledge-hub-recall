@@ -5,6 +5,10 @@ export interface HookContext {
     createHook: {
         sync: (hook: string, payload: any) => void;
     };
+    getConfig: (name: string) => any;
+    setConfig: (name: string, value: any) => void;
+    getEnv: (name: string, defaultValue?: any) => any;
+    setContext: (name: string, value: any) => void;
 }
 
 export interface ActionConfig {

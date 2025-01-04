@@ -9,3 +9,9 @@ export interface InitFastifyContext {
     registerRoute: RegisterRoute;
     registerRouter: (file: any, prefix: string) => void;
 }
+
+export interface InitFastifyConfig {
+    port: number;
+    basePath: string;
+    logger: boolean;
+}

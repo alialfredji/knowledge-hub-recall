@@ -1,29 +1,41 @@
 
-import { registerRoute, registerRouter, run } from './fastify.lib';
-import type { HookContext } from '../types';
+import { registerRoute, registerRouter, start, init } from './fastify.lib';
+import type { HookContext } from '../../types';
 
 const SERVICE_NAME = 'fastify';
 
-const hooks = {
-    INIT_FASTIFY: 'INIT_FASTIFY',
-};
-
-export default ({ registerAction, registerHook, knownHooks }: HookContext) => {
-    registerHook(hooks);
+export default ({
+    registerAction,
+    registerHook,
+    getConfig,
+    knownHooks,
+    createHook,
+    setContext,
+}: HookContext) => {
+    registerHook({
+        INIT_FASTIFY: 'INIT_FASTIFY',
+    });
 
     registerAction({
         name: SERVICE_NAME,
         trace: __dirname,
         hook: '$INIT_SERVICE',
-        handler: async (ctx: HookContext) => {
+        handler: async () => {
+            init(getConfig('service-fastify'));
+
             registerRoute.get('', (req, res) => {
                 res.send('API is running');
             })
 
-            await ctx.createHook.sync(knownHooks.INIT_FASTIFY, {
+            await createHook.sync(knownHooks.INIT_FASTIFY, {
                 registerRoute,
                 registerRouter,
             });
+
+            setContext('fastify', {
+                registerRoute,
+                registerRouter,
+            })
         }
     });
 
@@ -31,9 +43,7 @@ export default ({ registerAction, registerHook, knownHooks }: HookContext) => {
         name: SERVICE_NAME,
         trace: __dirname,
         hook: '$START_SERVICE',
-        handler: async () => {
-            await run();
-        }
+        handler: start,
     });
 
     // registerAction({

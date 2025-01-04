@@ -5,9 +5,22 @@ hookApp.run({
     trace: true,
     features: [],
     services: [
-        require('./service-fastify'),
+        require('./services/service-env'),
+        require('./services/service-supabase'),
+        require('./services/service-fastify'),
     ],
-    settings: {},
+    settings: ({ setConfig, getEnv }: HookContext) => {
+        setConfig('service-fastify', {
+            port: getEnv('PORT', '8080'),
+            basePath: getEnv('BASE_PATH', '/api'),
+            logger: getEnv('LOGGER', false),
+        });
+
+        setConfig('service-supabase', {
+            url: getEnv('SUPABASE_URL'),
+            key: getEnv('SUPABASE_SERVICE_KEY'),
+        });
+    },
 });
 
 /*

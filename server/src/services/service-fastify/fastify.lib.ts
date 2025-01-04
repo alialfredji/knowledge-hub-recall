@@ -1,39 +1,41 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyInstance } from 'fastify';
+import { InitFastifyConfig } from './types';
 
-const env = {
-    port: 8080,
-    basePath: '/api',
-    logger: false,
-};
-
-const fastify = Fastify({
-    logger: env.logger,
-});
-
-export const run = async () => {
-    await fastify.listen({ port: env.port });
-    console.log(`API is running on http://localhost:${env.port}${env.basePath}`);
-}
+let config: InitFastifyConfig = null;
+let client: FastifyInstance = null;
 
 // List of all routes
-export const fastifyRoutes = [];
+export const routePaths: string[] = [];
+
+export const init = (_config: InitFastifyConfig) => {
+    config = _config;
+
+    client = Fastify({
+        logger: config.logger,
+    });
+};
+
+export const start = async () => {
+    await client.listen({ port: config.port });
+    console.log(`API is running on http://localhost:${config.port}${config.basePath}`);
+};
 
 // Get all routes
-export const getRoutes = () => fastifyRoutes;
+export const getRoutesPaths = () => routePaths;
 
 // Register a router
 export const registerRouter = (file: any, prefix: string) => {
-    fastifyRoutes.push(`${env.basePath}${prefix}`);
-    fastify.register(file, { prefix: `${env.basePath}${prefix}` });
+    routePaths.push(`${config.basePath}${prefix}`);
+    client.register(file, { prefix: `${config.basePath}${prefix}` });
 };
 
 // Register a route
 export const registerRoute = (method: string, url: string, handler: Function, schema: object = {}) => {
-    fastifyRoutes.push(`${env.basePath}${url}`);
+    routePaths.push(`${config.basePath}${url}`);
 
-    fastify.route({
+    client.route({
         method,
-        url: `${env.basePath}${url}`,
+        url: `${config.basePath}${url}`,
         handler: (request, reply) => handler(request, reply),
         schema,
     });
