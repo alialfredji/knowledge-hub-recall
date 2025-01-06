@@ -1,6 +1,7 @@
 import type { FastifySchema } from 'fastify';
 import type { HookContext } from '@/types';
 import type { FastifyLibContext } from '@/services/service-fastify/types';
+import * as pg from '@/services/service-postgres';
 
 const FEATURE_NAME = 'uploads';
 
@@ -32,7 +33,7 @@ const createUploadSchema: FastifySchema = {
     }
 };
 
-export default ({ registerAction, createHook }: HookContext) => {
+export default ({ registerAction }: HookContext) => {
     registerAction({
         name: FEATURE_NAME,
         trace: __dirname,
@@ -44,14 +45,17 @@ export default ({ registerAction, createHook }: HookContext) => {
                 handler: async (request, reply) => {
                     const { type, payload } = request.body as { type: string; payload: any };
 
-                    console.log(type, payload);
+                    const result = await pg.query(
+                        `
+                            INSERT INTO uploads (type, payload, created_at, updated_at)
+                            VALUES ($1, $2, NOW(), NOW())
+                            RETURNING id
+                        `,
+                        [type, payload]
+                    );
 
                     return reply.status(201).send({
-                        id: 1,
-                        type,
-                        payload,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
+                        id: result[0].id,
                     });
                 }
             })
