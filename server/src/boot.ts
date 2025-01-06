@@ -3,11 +3,13 @@ import type { HookContext } from '@/types';
 
 hookApp.run({
     trace: process.env.NODE_ENV === 'development',
-    features: [],
+    features: [
+        require('./features/feature-uploads'),
+    ],
     services: [
         require('./services/service-env'),
-        require('./services/service-supabase'),
         require('./services/service-fastify'),
+        require('./services/service-postgres'),
     ],
     settings: ({ setConfig, getEnv }: HookContext) => {
         setConfig('service-fastify', {
@@ -29,9 +31,8 @@ hookApp.run({
             },
         });
 
-        setConfig('service-supabase', {
-            url: getEnv('SUPABASE_URL'),
-            key: getEnv('SUPABASE_SERVICE_KEY'),
+        setConfig('service-postgres', {
+            connectionString: getEnv('POSTGRES_CONNECTION_STRING'),
         });
     },
 });

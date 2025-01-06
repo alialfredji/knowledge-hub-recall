@@ -36,7 +36,9 @@
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.2.0",
     "@supabase/supabase-js": "^2.47.10",
+    "@types/pg": "^8.11.10",
     "fastify": "^5.2.0",
-    "node-env-file": "^0.1.8"
+    "node-env-file": "^0.1.8",
+    "pg": "^8.13.1"
   }
 }
